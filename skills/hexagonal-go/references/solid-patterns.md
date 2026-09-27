@@ -1,13 +1,16 @@
+<!-- GENERATED from shared/solid-patterns.md by scripts/build.mjs. Edit the source, not this file. -->
+
 # SOLID, design patterns and clean code in a hexagonal backend
 
-Principles and patterns are tools, not goals. Use one when the code shows the matching pain. Every example below is described in terms of hexagonal roles (domain, use case, port, adapter) so it applies in any language; the language references show the syntax.
+Principles and patterns are tools, not goals. Use one when the code shows the matching pain. Every example below is described in terms of hexagonal roles (domain, use case, port, adapter) so it applies in any language; `idioms.md` and the recipes show the syntax.
 
 ## Contents
 1. SOLID applied
 2. Design patterns: where they fit and when to skip them
-3. DDD tactical building blocks (only what earns its place)
-4. Clean code rules
-5. Code smells and their fix
+3. Clean code rules
+4. Code smells and their fix
+
+DDD building blocks (aggregates, value objects, domain events) are covered in `ddd.md`.
 
 ## 1. SOLID applied
 
@@ -25,14 +28,13 @@ Extend by adding, not by editing tested code.
 
 ### L: Liskov Substitution
 Any adapter must be swappable for another without the use case noticing.
-- Honor the port's contract: same return semantics (`findById` returns "absent" the same way everywhere: `null`/`None`/`Optional.empty`/`(zero, ErrNotFound)`), same errors for the same failures, same idempotency and ordering guarantees.
-- Enforce with a **shared contract test suite** run against the in-memory fake and each real adapter (see `testing.md`).
+- Honor the port's contract: same return semantics (`findById` returns "absent" the same way in every implementation), same errors for the same failures, same idempotency and ordering guarantees.
+- Enforce with a **shared contract test suite** run against the in-memory fake and each real adapter (see `testing-strategy.md`).
 - Smell: `if adapter is SomeConcreteType` in a use case; an adapter that throws `NotImplemented` for a port method.
 
 ### I: Interface Segregation
 Ports are small and role-specific.
 - Split `OrderRepository` into `OrderWriter` and `OrderReader` when the write side and query side have different consumers, or keep one small port per use case need. Never build a 20-method `Repository<T>` that every use case is forced to depend on.
-- In Go this is the default idiom: small interfaces defined by the consumer.
 - Smell: fakes that must implement many unused methods.
 
 ### D: Dependency Inversion
@@ -57,7 +59,7 @@ Source-code dependencies point at abstractions owned by the inner layer.
 | **Specification / Query object** | Domain or application | Reusable, composable filtering rules | A couple of simple filters |
 | **Builder / Object Mother** | Test support | Readable test data with sensible defaults | Production code with few fields |
 | **Null Object** | Any port with an optional effect | "Do nothing" default (no-op notifier) instead of null checks | The absence should be an explicit error |
-| **Result / Either** | Application boundary | Expected failures modeled as values (natural in Go; optional elsewhere) | Exceptions already used consistently and idiomatically |
+| **Result / Either** | Application boundary | Expected failures modeled as values | Exceptions already used consistently and idiomatically |
 | **Mediator / CQRS** | Application layer | Distinct read/write models, pipeline behaviors, many use cases needing uniform cross-cutting | Small service: calling the use case directly is simpler than a bus |
 | **Circuit breaker / Retry / Timeout** | Outbound adapter (or decorator over the port) | Flaky remote dependency | Local, deterministic calls |
 | **Saga / Process manager** | Application layer | A business process spans several services and needs compensation | A single local transaction can do it |
@@ -67,21 +69,10 @@ Guidance:
 - Patterns compound cost. A Mediator plus decorators plus CQRS on a five-endpoint CRUD service is over-engineering. Start with a plain use case and refactor when the need shows up.
 - Name things by role, not by pattern (`OrderRepository`, not `OrderRepositoryFactoryStrategy`).
 
-## 3. DDD tactical building blocks (only what earns its place)
-
-- **Entity**: identity + lifecycle; equality by id. Enforces its own invariants.
-- **Value object**: immutable, equality by value, self-validating (`Money`, `Email`, `Quantity`). The cheapest, highest-value DDD tool: use it everywhere primitives carry rules.
-- **Aggregate**: a consistency boundary with one root. Changes go through the root, one aggregate per transaction, reference others by id, keep them small.
-- **Domain service**: stateless rule spanning entities that does not fit in one. No I/O.
-- **Domain event**: immutable fact in the past tense (`OrderPaid`), raised by the aggregate, published after commit.
-- **Application service = use case**: orchestration only; holds no business rules.
-- **Ubiquitous language**: class and method names use the business's terms. Rename when the language drifts.
-- Skip the heavy machinery (aggregates, events, factories) for CRUD-shaped features. Use it where rules and state transitions are real.
-
-## 4. Clean code rules
+## 3. Clean code rules
 
 Naming and structure
-- Names reveal intent and use the domain vocabulary; avoid abbreviations except universal ones. Booleans read as predicates (`isPaid`, `has_stock`, `IsExpired`). Follow the **language's** casing conventions (see the language reference).
+- Names reveal intent and use the domain vocabulary; avoid abbreviations except universal ones. Booleans read as predicates (`isPaid`, `has_stock`, `IsExpired`). Follow the **language's** casing conventions (see `idioms.md`).
 - Functions do one thing at one level of abstraction; prefer under ~20 lines and few parameters (three or fewer; group related ones into a value type).
 - Avoid boolean flag parameters (`save(order, true)`): split into two functions or use an enum/options type.
 - Early returns / guard clauses instead of deep nesting. Avoid nested ternaries.
@@ -97,7 +88,7 @@ State and side effects
 
 Comments and dead weight
 - Code explains *what*; comments explain *why* (a constraint, a trade-off, a link to a ticket). Delete commented-out code and unused parameters/imports.
-- Public API docs (docstrings, Javadoc, XML docs, GoDoc, TSDoc) for exported types and non-obvious contracts.
+- Public API docs (the language's doc-comment format) for exported types and non-obvious contracts.
 
 Duplication and abstraction
 - DRY applies to knowledge, not to text that happens to look alike. Wait for the **third** repetition before extracting; a wrong abstraction costs more than duplication.
@@ -108,7 +99,7 @@ Error handling
 - Handle an error where you can do something meaningful about it; otherwise add context and propagate. Log at the boundary that handles it, once.
 - Error messages state what failed and with which identifiers, without secrets.
 
-## 5. Code smells and their fix
+## 4. Code smells and their fix
 
 | Smell | Fix |
 |---|---|

@@ -9,6 +9,7 @@ Prompts and expectations used to check that each skill triggers when it should a
 | `triggering.json` | Which prompts must load which skill, and which must load none |
 | `hexagonal-python.json` | Output quality for the Python skill |
 | `hexagonal-typescript.json` | Output quality for the TypeScript skill |
+| `hexagonal-go.json` | Output quality for the Go skill |
 
 ## Format
 

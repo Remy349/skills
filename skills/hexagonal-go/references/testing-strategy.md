@@ -1,6 +1,10 @@
-# Testing a hexagonal backend
+<!-- GENERATED from shared/testing-strategy.md by scripts/build.mjs. Edit the source, not this file. -->
 
-Hexagonal architecture pays off most in tests: the core runs without a database, a web server or the network, so most tests are fast and deterministic. Choose the cheapest test that proves the behavior for each boundary.
+# Testing strategy for a hexagonal backend
+
+Hexagonal architecture pays off most in tests. This file is the language-neutral strategy; the concrete tools for this language are in `testing.md`, and framework-specific test clients in `frameworks/`.
+
+The core runs without a database, a web server or the network, so most tests are fast and deterministic. Choose the cheapest test that proves the behavior for each boundary.
 
 ## Contents
 1. Strategy: what to test where
@@ -34,7 +38,7 @@ Shape: many domain and use case tests, a moderate number of adapter tests, few e
 
 - No mocks, no framework bootstrapping: construct objects, call behavior, assert state or raised domain errors.
 - Cover invariants (invalid creation is rejected), state transitions (allowed and forbidden), and value object equality and validation.
-- Property-based tests (Hypothesis, fast-check, jqwik, FsCheck, `testing/quick` or rapid) are a good fit for value objects and calculations.
+- Property-based tests are a good fit for value objects and calculations.
 
 ## 3. Use case tests with fakes
 
@@ -79,14 +83,14 @@ Goal: prove protocol mapping, not business logic.
 - Each mapped application/domain error → its status code and `code`.
 - Success → status, headers (`Location`), body shape, serialization of dates and money.
 - Auth: missing or invalid credentials → 401/403; principal propagated.
-- Use the framework's in-process test client (supertest / Nest testing module, FastAPI `TestClient`/httpx, `httptest`, MockMvc / `@WebMvcTest`, `WebApplicationFactory`). Inject a stub or fake use case so the test stays fast.
+- Use the framework's in-process test client. Inject a stub or fake use case so the test stays fast.
 
 ## 6. Outbound adapter integration tests
 
-- Run against the **real** technology, started with Testcontainers (available for all five languages) or an ephemeral service. Do not test SQL against an in-memory substitute with different semantics (e.g. SQLite standing in for PostgreSQL).
+- Run against the **real** technology, started with Testcontainers or an ephemeral service. Do not test SQL against an in-memory substitute with different semantics (e.g. SQLite standing in for PostgreSQL).
 - Apply the real migrations to the container so schema and mappings are verified together.
 - Verify: persistence round-trip (domain → storage → domain equals original), unique/foreign key mapping to application errors, transactions and rollback, pagination and ordering, timeouts and retries for HTTP clients.
-- For HTTP/vendor adapters use a local stub server (WireMock, MockServer, `httptest.Server`, `respx`, `nock`/MSW) to simulate success, 4xx, 5xx, slow responses and malformed bodies. Optionally add consumer-driven contract tests (Pact) for critical integrations.
+- For HTTP/vendor adapters use a local stub server or an HTTP mocking library to simulate success, 4xx, 5xx, slow responses and malformed bodies. Optionally add consumer-driven contract tests (Pact) for critical integrations.
 - Isolate data per test (transaction rollback, truncate, unique ids) so tests run in any order and in parallel.
 
 ## 7. End-to-end tests
@@ -102,7 +106,7 @@ Encode the dependency rule as an automated test or lint so it cannot silently er
 - Application must not depend on adapters or frameworks.
 - Inbound adapters must not depend on outbound adapters (and vice versa).
 - Only the composition root may reference concrete adapters.
-- Tools: ArchUnit (Java), NetArchTest or ArchUnitNET (C#), import-linter (Python), dependency-cruiser / eslint-plugin-boundaries (TypeScript), depguard / go-arch-lint (Go).
+- The tool and a ready-to-use rule set for this language are in `idioms.md`.
 
 ## 9. Fakes vs mocks, and what never to mock
 
@@ -115,12 +119,12 @@ Encode the dependency rule as an automated test or lint so it cannot silently er
 ## 10. Test design rules
 
 - **Structure**: Arrange-Act-Assert or Given-When-Then, one behavior per test, one reason to fail.
-- **Names describe behavior**: `rejects_payment_when_order_already_paid`, `ShouldReturn409WhenOrderAlreadyPaid`. Follow the language's test naming style.
+- **Names describe behavior**: for example "rejects payment when order already paid". Follow the language's test naming style.
 - **No logic in tests** (no loops/conditionals that mirror production code). Use parameterized/table-driven tests for input variations.
 - **Independent and repeatable**: no shared mutable state, no test ordering dependency, no real clock, no network except in explicitly integration tests.
 - **Test data builders / object mothers** create valid defaults and let each test override only the field that matters.
 - **Fast feedback**: the unit suite (domain + use case + HTTP adapter) should run in seconds and be the default local command.
-- **Coverage is a signal, not a target.** Prioritize rules, edge cases and error paths over line count. Mutation testing (Stryker, mutmut, PIT, Stryker.NET, go-mutesting) is a stronger check for critical logic.
+- **Coverage is a signal, not a target.** Prioritize rules, edge cases and error paths over line count. Mutation testing is a stronger check for critical logic.
 - Test the error paths as carefully as the happy path: invalid input, not found, conflicts, upstream failure, timeout.
 
 ## 11. Testing legacy code while refactoring

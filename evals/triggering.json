@@ -1,5 +1,5 @@
 {
-  "description": "Each case lists the project markers present and the skill that must be loaded (null means no hexagonal skill should load).",
+  "description": "Each case lists the project markers present and the skill that must be loaded (null means no hexagonal skill should load: Java, C#, PHP and non-backend tasks are out of scope).",
   "cases": [
     { "id": "py-fastapi-structure", "markers": ["pyproject.toml with fastapi"], "prompt": "How should I structure the orders module of this API so the business rules don't depend on FastAPI?", "expected_skill": "hexagonal-python" },
     { "id": "py-flask-fat-view", "markers": ["requirements.txt with flask"], "prompt": "This Flask view has 200 lines with SQL and validation mixed together. Refactor it.", "expected_skill": "hexagonal-python" },
@@ -9,9 +9,14 @@
     { "id": "ts-express-prisma", "markers": ["package.json with express and prisma", "tsconfig.json"], "prompt": "Decouple the checkout endpoint from Prisma so I can test it without a database.", "expected_skill": "hexagonal-typescript" },
     { "id": "ts-fastify-new", "markers": ["package.json with fastify", "tsconfig.json"], "prompt": "Add a PayOrder endpoint that calls our payment provider.", "expected_skill": "hexagonal-typescript" },
     { "id": "ts-drizzle-outbox", "markers": ["package.json with drizzle-orm", "tsconfig.json"], "prompt": "We lose OrderPlaced events when the broker is down. How do we publish them reliably?", "expected_skill": "hexagonal-typescript" },
+    { "id": "go-gin-structure", "markers": ["go.mod with github.com/gin-gonic/gin"], "prompt": "How should I organize the packages of this API so the order rules don't depend on Gin?", "expected_skill": "hexagonal-go" },
+    { "id": "go-nethttp-fat-handler", "markers": ["go.mod"], "prompt": "This handler decodes JSON, runs SQL and computes discounts in one function. Split it properly.", "expected_skill": "hexagonal-go" },
+    { "id": "go-gorm-review", "markers": ["go.mod with gorm.io/gorm"], "prompt": "Review internal/orders for testability and SOLID problems.", "expected_skill": "hexagonal-go" },
     { "id": "polyglot-python-service", "markers": ["services/api/pyproject.toml", "web/package.json with react"], "prompt": "In services/api, extract the pricing rules out of the route handlers.", "expected_skill": "hexagonal-python" },
     { "id": "negative-react-component", "markers": ["package.json with react", "tsconfig.json"], "prompt": "Make this React table component sortable by column.", "expected_skill": null },
     { "id": "negative-python-script", "markers": ["pyproject.toml"], "prompt": "Write a script that renames all .jpeg files in a folder to .jpg.", "expected_skill": null },
-    { "id": "negative-sql-question", "markers": [], "prompt": "What is the difference between a LEFT JOIN and an INNER JOIN?", "expected_skill": null }
+    { "id": "negative-sql-question", "markers": [], "prompt": "What is the difference between a LEFT JOIN and an INNER JOIN?", "expected_skill": null },
+    { "id": "negative-java-service", "markers": ["pom.xml with spring-boot-starter-web"], "prompt": "Structure this Spring Boot orders service with ports and adapters.", "expected_skill": null },
+    { "id": "negative-go-cli", "markers": ["go.mod"], "prompt": "Write a CLI that prints the SHA-256 of every file in a directory.", "expected_skill": null }
   ]
 }

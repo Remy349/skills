@@ -1,3 +1,5 @@
+<!-- GENERATED from shared/rest-api.md by scripts/build.mjs. Edit the source, not this file. -->
+
 # REST API conventions for the inbound HTTP adapter
 
 Everything here lives in the **inbound adapter** (routes/controllers, DTOs, middleware, error mapping). The use cases stay ignorant of HTTP. Use it as a checklist when designing or reviewing an endpoint.
@@ -59,7 +61,7 @@ Never return 200 with an error payload. Never use 500 for something the client c
 
 - Request and response DTOs belong to the adapter. Map them explicitly to the use case input/output. Explicit mapping also prevents **mass assignment** (a client setting `isAdmin` or `status` because the whole body was bound to an entity).
 - Do not return domain entities or ORM models. Response shapes are a public contract; entities are internal and change often.
-- Validate at the edge: required fields, types, ranges, lengths, formats (email, UUID, enum values), max body size, unknown fields policy (reject or ignore, decide once). Use the ecosystem's validator (Zod / class-validator, Pydantic, Bean Validation, DataAnnotations / FluentValidation, or manual checks in Go).
+- Validate at the edge: required fields, types, ranges, lengths, formats (email, UUID, enum values), max body size, unknown fields policy (reject or ignore, decide once). Use the validator of the detected framework (see `references/frameworks/`).
 - Business validation (is this coupon still valid, is stock available) stays in the domain/use case, and comes back as a business error.
 - Return **all** shape errors at once with their field paths instead of the first failure.
 - Set `Content-Type: application/json` (or `application/problem+json` for errors). Use `Location` for created resources.
@@ -114,7 +116,7 @@ Rules:
 ## 7. Versioning and contract
 
 - Version in the URL prefix (`/v1/...`) or a header; choose one and keep it. Only bump the major version for breaking changes. Additive changes (new optional fields, new endpoints) are not breaking; clients must ignore unknown fields.
-- Publish an **OpenAPI** description. Generate it from code (FastAPI, Springdoc, Swashbuckle/built-in OpenAPI, NestJS Swagger, zod-to-openapi) or write it contract-first and generate server stubs. Keep it in CI: fail when the spec changes unexpectedly.
+- Publish an **OpenAPI** description. Generate it from code with the framework's tooling or write it contract-first and generate server stubs. Keep it in CI: fail when the spec changes unexpectedly.
 - Deprecate with `Deprecation` and `Sunset` headers and a documented timeline.
 - Include an inbound-adapter test that pins the response shape of critical endpoints.
 
