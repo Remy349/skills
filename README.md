@@ -6,31 +6,76 @@ Skills are folders of instructions that an agent loads on demand. Instead of re-
 
 ## Available skills
 
-| Skill | Description |
-|---|---|
-| [`hexagonal-backend`](skills/hexagonal-backend) | Design, implement, review and refactor REST APIs with hexagonal architecture (ports & adapters), with idiomatic practices for Python, Go, TypeScript, Java and C#. |
+| Skill | Language | Frameworks | Persistence | Tests |
+|---|---|---|---|---|
+| [`hexagonal-python`](skills/hexagonal-python) | Python 3.11+ | FastAPI, Flask | SQLAlchemy 2 | pytest, import-linter |
+| [`hexagonal-typescript`](skills/hexagonal-typescript) | TypeScript on Node.js | NestJS, Express, Fastify | Prisma, TypeORM, Drizzle | Vitest, dependency-cruiser |
+| [`hexagonal-backend`](skills/hexagonal-backend) | Go, Java, C# (and the others, generically) | | | |
+
+`hexagonal-backend` is **deprecated**. It stays only until Go, Java and C# have their own `hexagonal-<language>` skill, then it will be removed. For Python and TypeScript, use the dedicated skills (see [Migrating from hexagonal-backend](#migrating-from-hexagonal-backend)).
+
+## What the hexagonal skills do
+
+Each `hexagonal-<language>` skill guides the agent to design, build, review and refactor backend REST APIs with **Hexagonal Architecture (Ports and Adapters)** and **Domain-Driven Design**, so business rules stay independent of the web framework, the ORM and every external system.
+
+- **Framework-agnostic core.** Domain and use cases are plain language code. Frameworks and ORMs live only in adapters, each with its own guide, and there is a procedure for frameworks without one.
+- **DDD, strategic and tactical.** Subdomains decide how much architecture a feature gets; bounded contexts, context mapping (Anti-Corruption Layer and friends), aggregates, value objects and domain events.
+- **Proportionality.** Thin slices for CRUD, full hexagonal for real business rules, outbox and read models only where needed. No layer without a reason.
+- **Three working modes.** BUILD (feature by feature, inside-out), REVIEW (findings by severity with file, rule, consequence and smallest fix), MIGRATE (strangler approach with characterization tests).
+- **Recipes** for the recurring cases, written framework-free: CRUD thin slice, aggregate state machine with optimistic concurrency, external API behind an ACL, domain events with the transactional outbox, read model with cursor pagination, idempotent commands.
+- **REST, SOLID, patterns and clean code**, including when *not* to use a pattern.
+- **Testing per boundary** with fakes, shared contract suites for every adapter, and integration tests against real PostgreSQL in containers.
+- **Automatic architecture enforcement** in CI (import-linter, dependency-cruiser).
+
+Every code example in these skills is extracted from the Markdown and verified: type-checked in strict mode, linted, and run, including integration tests against PostgreSQL through Testcontainers.
 
 ## Installation
 
-Requires Node.js. Run from your project directory (or see the CLI docs for global installs).
+Requires Node.js. Run from your project directory. Install the skill for the language of your backend:
 
 ```bash
-# npm
-npx skills add Remy349/skills
+# Python backend
+npx skills add Remy349/skills --skill hexagonal-python
 
-# pnpm
-pnpm dlx skills add Remy349/skills
+# TypeScript / Node.js backend
+npx skills add Remy349/skills --skill hexagonal-typescript
+
+# Monorepo with both
+npx skills add Remy349/skills --skill hexagonal-python hexagonal-typescript
 ```
 
-The [`skills` CLI](https://www.skills.sh/docs/cli) will let you pick the skill and the agents to install it for.
+With pnpm, use `pnpm dlx skills add ...` instead of `npx skills add ...`.
 
-To pull later changes:
+Useful options of the [`skills` CLI](https://www.skills.sh/docs/cli):
+
+| Option | Effect |
+|---|---|
+| `--list` | Show the skills available in this repository without installing |
+| `--agent claude-code opencode` | Install for specific agents only (`'*'` for all) |
+| `-g` | Install at user level instead of in the project |
+| `--copy` | Copy files instead of symlinking them into each agent's folder |
+| `-y` | Skip the confirmation prompts |
+
+Running `npx skills add Remy349/skills` without `--skill` opens an interactive picker.
+
+The CLI records what you installed in `skills-lock.json`. Commit it so everyone on the team gets the same skills. To update later:
 
 ```bash
-npx skills update
+npx skills update hexagonal-python
 ```
 
-Run `npx skills add --help` to see the options available in your CLI version, such as installing a single skill or targeting a specific agent.
+Run `npx skills add --help` to see the options of your CLI version.
+
+## Migrating from hexagonal-backend
+
+If you installed the old multi-language skill, replace it with the one for your language:
+
+```bash
+npx skills remove hexagonal-backend
+npx skills add Remy349/skills --skill hexagonal-python      # or hexagonal-typescript
+```
+
+Having both installed makes them compete for the same prompts, so remove the old one.
 
 ## Compatibility
 
@@ -41,93 +86,72 @@ The skills follow the open `SKILL.md` format, so they work with any agent suppor
 | OpenCode | Tested |
 | Other agents | Expected to work through the CLI, not tested yet |
 
-## `hexagonal-backend`
+## How to use them
 
-### Purpose
-
-Keep business rules independent from frameworks, transport and persistence. This skill guides the agent to build and review server-side code so that the domain and use cases can be tested without a database or a web server, and so infrastructure can be swapped without rewriting the rules.
-
-### What it does
-
-- **Detects your stack** from the repository (`go.mod`, `pom.xml`, `*.csproj`, `pyproject.toml`, `package.json` + `tsconfig.json`) and loads the matching language guide.
-- **Follows the codebase first.** It respects existing formatters, linters, folder layout and naming before applying its own defaults.
-- **Scales the architecture to the problem.** Thin slices for plain CRUD, full hexagonal structure for features with real business rules, events and outbox only where needed. No layers without a reason.
-- **Guides feature-by-feature construction**: domain, outbound ports, use case, inbound REST adapter, outbound adapters, composition root, tests.
-- **Applies REST best practices**: resource modeling, status codes, Problem Details errors (RFC 9457), pagination, idempotency, optimistic concurrency and security basics.
-- **Covers SOLID, design patterns and clean code**, with guidance on when *not* to use each pattern.
-- **Defines a testing strategy per boundary**: domain tests, use cases with in-memory fakes, port contract tests, HTTP adapter tests, integration tests with containers.
-- **Enforces the dependency rule automatically** with architecture tests and linters.
-- **Supports migrations of legacy code** through the strangler approach and characterization tests.
-
-### Supported languages
-
-| Language | Frameworks covered | Architecture enforcement |
-|---|---|---|
-| TypeScript | Express, Fastify, NestJS | dependency-cruiser |
-| Python | FastAPI, Flask, Django | import-linter |
-| Go | `net/http`, chi | depguard |
-| Java | Spring Boot | ArchUnit |
-| C# | ASP.NET Core | NetArchTest |
-
-Each language guide includes naming and style conventions, project layout, a complete vertical slice (`PlaceOrder`), error mapping, testing tools and common pitfalls.
-
-### How to use it
-
-Once installed, the agent activates the skill automatically when your request matches it. You can also name it explicitly. Example prompts:
+Once installed, the agent activates the skill when your request matches it. You can also name it explicitly. Example prompts:
 
 ```text
-Structure a new orders REST API in Go using ports and adapters.
+Structure a new orders REST API with FastAPI using ports and adapters.
 ```
 
 ```text
-Refactor this fat NestJS controller into a use case with a repository port.
+Refactor this fat NestJS service into use cases with repository ports.
 ```
 
 ```text
-Review this Spring Boot service for architecture and SOLID problems.
+Review this Express + Prisma project for architecture and SOLID problems.
 ```
 
 ```text
-Add a PayOrder use case to this FastAPI project following the existing layout.
+Add a CancelOrder use case with optimistic concurrency to this Flask project.
 ```
 
 ```text
-Use the hexagonal-backend skill to decouple this service from its database.
+We lose events when the broker is down. Publish OrderPlaced reliably.
 ```
 
-### Skill contents
+## Skill contents
+
+Every language skill has the same shape, so what you learn in one applies to the others:
 
 ```text
-skills/hexagonal-backend/
-├── SKILL.md                      # workflow and language-agnostic rules
+skills/hexagonal-<language>/
+├── SKILL.md                    # detection, working modes, core rules, language essentials, checklist
 └── references/
-    ├── typescript.md
-    ├── python.md
-    ├── go.md
-    ├── java.md
-    ├── csharp.md
-    ├── rest-api.md               # HTTP contract, errors, pagination, security
-    ├── design-patterns-solid.md  # SOLID, patterns, DDD basics, clean code
-    └── testing.md                # testing strategy per boundary
+    ├── idioms.md               # conventions, layout, base vertical slice, architecture enforcement
+    ├── testing.md              # test tooling for the language
+    ├── frameworks/<fw>.md      # one guide per web framework
+    ├── persistence/<lib>.md    # one guide per ORM or query builder
+    ├── recipes/<case>.md       # framework-free recipes for recurring use cases
+    ├── ddd.md                  # strategic and tactical DDD
+    ├── rest-api.md             # HTTP contract, Problem Details, pagination, security
+    ├── solid-patterns.md       # SOLID, design patterns, clean code
+    └── testing-strategy.md     # what to test at each boundary
 ```
 
-Language guides are loaded only when needed, so the skill keeps its context footprint small.
+The agent loads `SKILL.md` first and reads references only when the task needs them, which keeps the context small.
 
 ## Repository structure
 
 ```text
-skills/
+skills/                         # this repository
 ├── README.md
+├── CONTRIBUTING.md
 ├── LICENSE
+├── shared/                     # single source of truth for content common to every language skill
+├── scripts/
+│   ├── build.mjs               # copies shared/ into the skills
+│   └── validate.mjs            # frontmatter, description length, size, links
+├── evals/                      # prompts and expectations to check the skills
 └── skills/
-    └── <skill-name>/
-        ├── SKILL.md
-        └── references/
+    └── hexagonal-<language>/
 ```
+
+`shared/` is not installed: the CLI only picks up folders that contain a `SKILL.md`. See [CONTRIBUTING.md](CONTRIBUTING.md) for how the shared content is generated into each skill.
 
 ## Contributing
 
-Issues and suggestions are welcome. If a skill gives wrong guidance for your language or framework, open an issue with the prompt you used and the output you expected.
+Issues and suggestions are welcome. If a skill gives wrong guidance for your language or framework, open an issue with the prompt you used and the output you expected. See [CONTRIBUTING.md](CONTRIBUTING.md) before changing a skill.
 
 ## License
 

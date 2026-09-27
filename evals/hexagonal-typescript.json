@@ -1,0 +1,64 @@
+{
+  "skill": "hexagonal-typescript",
+  "evals": [
+    {
+      "id": "greenfield-nest-place-order",
+      "prompt": "Create a NestJS service with a POST /orders endpoint that places an order with lines and returns the total. Use Prisma and PostgreSQL.",
+      "setup": "Empty directory.",
+      "expectations": [
+        "Files are organized by bounded context, then domain / application / adapters",
+        "No file under domain/ or application/ imports @nestjs/*, @prisma/*, zod or express",
+        "Use cases have no @Injectable() decorator and are registered with useFactory, or the answer explains the trade-off of adding it",
+        "Ports are interfaces bound to Symbol tokens",
+        "Prisma generated types never appear in ports or use cases",
+        "One global exception filter returns application/problem+json",
+        "A use case test uses in-memory fakes and no database",
+        "A dependency-cruiser config (or equivalent) enforces the dependency rule",
+        "The answer reports which checks were run (tsc, tests, depcruise) and their result, or says they were not run"
+      ]
+    },
+    {
+      "id": "express-to-hexagonal",
+      "prompt": "This Express route calls prisma directly and has the discount logic inline. Make it testable without a database.",
+      "setup": "An Express 5 app with a POST /checkout route using PrismaClient and computing discounts in the handler.",
+      "expectations": [
+        "Discount rules move into the domain or the use case",
+        "Prisma access moves behind a repository port with a Prisma adapter",
+        "The route becomes a thin adapter created from injected use cases",
+        "Errors go through one error middleware instead of try/catch per route"
+      ]
+    },
+    {
+      "id": "typeorm-concurrency",
+      "prompt": "Two admins can edit the same order at the same time and overwrite each other. Fix it.",
+      "setup": "A hexagonal TypeScript project using TypeORM.",
+      "expectations": [
+        "The aggregate carries a version loaded from storage",
+        "The repository updates with WHERE id AND version and throws a ConflictError when no row changes",
+        "save() is not used for the versioned update",
+        "The HTTP adapter maps the conflict to 409 and supports If-Match/ETag"
+      ]
+    },
+    {
+      "id": "external-api-acl",
+      "prompt": "Integrate Stripe to charge an order.",
+      "setup": "The base hexagonal Fastify + Drizzle project.",
+      "expectations": [
+        "A PaymentGateway port in domain terms, with the Stripe SDK used only in the adapter",
+        "The remote call happens outside any database transaction",
+        "The order id (or another stable key) is sent as the idempotency key",
+        "Declined payments and provider outages are different errors with different statuses"
+      ]
+    },
+    {
+      "id": "ts7-architecture-check",
+      "prompt": "Add an architecture check to CI.",
+      "setup": "A hexagonal project on TypeScript 7.",
+      "expectations": [
+        "dependency-cruiser is configured with the swc parser (or a TypeScript 6 install for tooling)",
+        "The answer warns that without a parser the check reports 0 modules and passes silently",
+        "The rules forbid domain → frameworks, application → adapters, inbound → outbound and cross-context imports"
+      ]
+    }
+  ]
+}

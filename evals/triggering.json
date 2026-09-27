@@ -1,0 +1,17 @@
+{
+  "description": "Each case lists the project markers present and the skill that must be loaded (null means no hexagonal skill should load).",
+  "cases": [
+    { "id": "py-fastapi-structure", "markers": ["pyproject.toml with fastapi"], "prompt": "How should I structure the orders module of this API so the business rules don't depend on FastAPI?", "expected_skill": "hexagonal-python" },
+    { "id": "py-flask-fat-view", "markers": ["requirements.txt with flask"], "prompt": "This Flask view has 200 lines with SQL and validation mixed together. Refactor it.", "expected_skill": "hexagonal-python" },
+    { "id": "py-review-sqlalchemy", "markers": ["pyproject.toml with sqlalchemy"], "prompt": "Review services/orders.py for SOLID and testability problems.", "expected_skill": "hexagonal-python" },
+    { "id": "py-ddd-aggregate", "markers": ["pyproject.toml"], "prompt": "Model an Order aggregate with lines and a cancel rule, DDD style.", "expected_skill": "hexagonal-python" },
+    { "id": "ts-nest-service", "markers": ["package.json with @nestjs/core", "tsconfig.json"], "prompt": "Our OrdersService does everything. Split it into use cases with ports.", "expected_skill": "hexagonal-typescript" },
+    { "id": "ts-express-prisma", "markers": ["package.json with express and prisma", "tsconfig.json"], "prompt": "Decouple the checkout endpoint from Prisma so I can test it without a database.", "expected_skill": "hexagonal-typescript" },
+    { "id": "ts-fastify-new", "markers": ["package.json with fastify", "tsconfig.json"], "prompt": "Add a PayOrder endpoint that calls our payment provider.", "expected_skill": "hexagonal-typescript" },
+    { "id": "ts-drizzle-outbox", "markers": ["package.json with drizzle-orm", "tsconfig.json"], "prompt": "We lose OrderPlaced events when the broker is down. How do we publish them reliably?", "expected_skill": "hexagonal-typescript" },
+    { "id": "polyglot-python-service", "markers": ["services/api/pyproject.toml", "web/package.json with react"], "prompt": "In services/api, extract the pricing rules out of the route handlers.", "expected_skill": "hexagonal-python" },
+    { "id": "negative-react-component", "markers": ["package.json with react", "tsconfig.json"], "prompt": "Make this React table component sortable by column.", "expected_skill": null },
+    { "id": "negative-python-script", "markers": ["pyproject.toml"], "prompt": "Write a script that renames all .jpeg files in a folder to .jpg.", "expected_skill": null },
+    { "id": "negative-sql-question", "markers": [], "prompt": "What is the difference between a LEFT JOIN and an INNER JOIN?", "expected_skill": null }
+  ]
+}
