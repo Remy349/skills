@@ -45,6 +45,8 @@ Copy the matching file from `shared/templates/`, keep all its sections, and link
 
 ## Adding a language
 
+The supported languages are Python, TypeScript and Go. Open an issue before starting another one: a language skill is only useful if someone keeps its framework and library versions current.
+
 1. Create `skills/hexagonal-<language>/SKILL.md` using an existing language skill as the model, keeping the generated regions.
 2. Write `references/idioms.md` and `references/testing.md`, then the framework, persistence and recipe files.
 3. Run `node scripts/build.mjs` to copy the shared references, then `node scripts/validate.mjs`.

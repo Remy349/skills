@@ -10,9 +10,9 @@ Skills are folders of instructions that an agent loads on demand. Instead of re-
 |---|---|---|---|---|
 | [`hexagonal-python`](skills/hexagonal-python) | Python 3.11+ | FastAPI, Flask | SQLAlchemy 2 | pytest, import-linter |
 | [`hexagonal-typescript`](skills/hexagonal-typescript) | TypeScript on Node.js | NestJS, Express, Fastify | Prisma, TypeORM, Drizzle | Vitest, dependency-cruiser |
-| [`hexagonal-backend`](skills/hexagonal-backend) | Go, Java, C# (and the others, generically) | | | |
+| [`hexagonal-go`](skills/hexagonal-go) | Go 1.26+ | net/http, chi, Gin, Echo, Fiber | pgx, sqlc, GORM | testing, testcontainers-go, golangci-lint (depguard) |
 
-`hexagonal-backend` is **deprecated**. It stays only until Go, Java and C# have their own `hexagonal-<language>` skill, then it will be removed. For Python and TypeScript, use the dedicated skills (see [Migrating from hexagonal-backend](#migrating-from-hexagonal-backend)).
+Supported languages are **Python, TypeScript and Go**. Java, C# and PHP are not supported: the previous multi-language `hexagonal-backend` skill has been removed (see [Migrating from hexagonal-backend](#migrating-from-hexagonal-backend)).
 
 ## What the hexagonal skills do
 
@@ -25,7 +25,7 @@ Each `hexagonal-<language>` skill guides the agent to design, build, review and 
 - **Recipes** for the recurring cases, written framework-free: CRUD thin slice, aggregate state machine with optimistic concurrency, external API behind an ACL, domain events with the transactional outbox, read model with cursor pagination, idempotent commands.
 - **REST, SOLID, patterns and clean code**, including when *not* to use a pattern.
 - **Testing per boundary** with fakes, shared contract suites for every adapter, and integration tests against real PostgreSQL in containers.
-- **Automatic architecture enforcement** in CI (import-linter, dependency-cruiser).
+- **Automatic architecture enforcement** in CI (import-linter, dependency-cruiser, golangci-lint with depguard).
 
 Every code example in these skills is extracted from the Markdown and verified: type-checked in strict mode, linted, and run, including integration tests against PostgreSQL through Testcontainers.
 
@@ -40,8 +40,11 @@ npx skills add Remy349/skills --skill hexagonal-python
 # TypeScript / Node.js backend
 npx skills add Remy349/skills --skill hexagonal-typescript
 
-# Monorepo with both
-npx skills add Remy349/skills --skill hexagonal-python hexagonal-typescript
+# Go backend
+npx skills add Remy349/skills --skill hexagonal-go
+
+# Monorepo with several backends
+npx skills add Remy349/skills --skill hexagonal-python hexagonal-go
 ```
 
 With pnpm, use `pnpm dlx skills add ...` instead of `npx skills add ...`.
@@ -68,14 +71,14 @@ Run `npx skills add --help` to see the options of your CLI version.
 
 ## Migrating from hexagonal-backend
 
-If you installed the old multi-language skill, replace it with the one for your language:
+The old multi-language `hexagonal-backend` skill no longer exists. Replace it with the skill for your language:
 
 ```bash
 npx skills remove hexagonal-backend
-npx skills add Remy349/skills --skill hexagonal-python      # or hexagonal-typescript
+npx skills add Remy349/skills --skill hexagonal-go      # or hexagonal-python, hexagonal-typescript
 ```
 
-Having both installed makes them compete for the same prompts, so remove the old one.
+Having both installed makes them compete for the same prompts, so remove the old one. For Java and C# there is no replacement.
 
 ## Compatibility
 
@@ -100,6 +103,10 @@ Refactor this fat NestJS service into use cases with repository ports.
 
 ```text
 Review this Express + Prisma project for architecture and SOLID problems.
+```
+
+```text
+Split this Gin handler that runs SQL into a use case with a repository port.
 ```
 
 ```text

@@ -1,0 +1,68 @@
+{
+  "skill": "hexagonal-go",
+  "evals": [
+    {
+      "id": "greenfield-nethttp-place-order",
+      "prompt": "Create a Go service with a POST /orders endpoint that places an order with lines and returns the total. Use the standard library router and PostgreSQL with pgx.",
+      "setup": "Empty directory with go.mod (module shop, go 1.26).",
+      "expectations": [
+        "Packages are organized by bounded context under internal/, then domain / app / adapters (inbound, outbound)",
+        "No package under domain/ or app/ imports net/http, pgx, database/sql or a web framework",
+        "Money is int64 minor units, never float64; ids are defined types",
+        "Ports are interfaces declared in the app package; use cases receive them through a NewX constructor",
+        "Domain structs have unexported fields and no json or db tags",
+        "Errors are sentinels wrapped with %w and mapped to application/problem+json in one place",
+        "context.Context is the first parameter of every method that does I/O",
+        "main.go sets server timeouts and shuts down gracefully on SIGTERM",
+        "A use case test uses in-memory fakes and no database",
+        "A depguard configuration (or an equivalent architecture check) is included",
+        "The answer reports which checks were run (gofmt, go vet, golangci-lint, go test -race) and their result, or says they were not run"
+      ]
+    },
+    {
+      "id": "refactor-gin-fat-handler",
+      "prompt": "Refactor this Gin handler into a use case with a repository port. Keep the HTTP behavior identical.",
+      "setup": "A Gin app whose POST /orders handler binds JSON, runs SQL with a *sql.DB global, computes the total and writes c.JSON with ad hoc error bodies, all in one function.",
+      "expectations": [
+        "Characterization tests of the current HTTP behavior (httptest) come first, or are explicitly proposed before the change",
+        "The handler becomes thin: bind, call the use case, render; errors go through c.Error and one middleware",
+        "SQL moves into an outbound adapter behind a repository interface declared by the app package",
+        "The global *sql.DB is replaced by explicit wiring in main",
+        "Status codes and response bodies of the endpoint are unchanged"
+      ]
+    },
+    {
+      "id": "review-mode-format",
+      "prompt": "Review this service for architecture problems.",
+      "setup": "An Echo project whose domain Order struct has gorm and json tags, whose services take echo.Context, and which returns echo.NewHTTPError from the service layer.",
+      "expectations": [
+        "Findings are ordered by severity and use the format [severity] path:line — rule — consequence — fix",
+        "The GORM model used as domain entity is reported as a blocker",
+        "echo.Context and echo.NewHTTPError outside the adapter are reported",
+        "Fixes are the smallest local change, not a rewrite"
+      ]
+    },
+    {
+      "id": "proportionality-crud",
+      "prompt": "Add CRUD endpoints for product categories (name and slug, nothing else).",
+      "setup": "An existing hexagonal Go project with net/http and pgx.",
+      "expectations": [
+        "The answer uses a thin slice: one package with the record, a port and the use cases; no aggregate, no events, no outbox",
+        "A port still separates the use cases from SQL",
+        "Uniqueness relies on a unique constraint translated to a conflict error, not only on a check-then-insert",
+        "The existing layout and naming of the project are followed"
+      ]
+    },
+    {
+      "id": "fiber-immutable",
+      "prompt": "Add an endpoint to our Fiber API that cancels an order by id and publishes an OrderCancelled event.",
+      "setup": "A Fiber v3 project with the base hexagonal layout and the default fiber.Config.",
+      "expectations": [
+        "The answer sets Immutable: true or copies values taken from fiber.Ctx before they reach the use case",
+        "fiber.Ctx is not passed to the application layer; c.Context() is",
+        "The event goes to an outbox in the same transaction as the order update, not straight to a broker",
+        "A stale version or a forbidden transition maps to 409 through the central error handler"
+      ]
+    }
+  ]
+}
