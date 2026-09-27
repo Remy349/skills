@@ -1,0 +1,65 @@
+{
+  "skill": "hexagonal-python",
+  "evals": [
+    {
+      "id": "greenfield-fastapi-place-order",
+      "prompt": "Create a FastAPI service with a POST /orders endpoint that places an order with lines and returns the total. Use SQLAlchemy and PostgreSQL.",
+      "setup": "Empty directory.",
+      "expectations": [
+        "Files are organized by bounded context, then domain / application / adapters",
+        "No module under domain/ or application/ imports fastapi, pydantic, sqlalchemy or httpx",
+        "Money is integer minor units or Decimal, never float",
+        "The use case receives its ports through the constructor and takes and returns frozen dataclasses",
+        "Pydantic models exist only in the inbound adapter and are mapped to the use case input",
+        "Errors are mapped to application/problem+json in one exception-handler module",
+        "A use case test uses in-memory fakes and no database",
+        "import-linter contracts (or an equivalent architecture test) are included",
+        "The answer reports which checks were run (ruff, mypy, pytest) and their result, or says they were not run"
+      ]
+    },
+    {
+      "id": "refactor-flask-fat-view",
+      "prompt": "Refactor this Flask view into a use case with a repository port. Keep the HTTP behavior identical.",
+      "setup": "A Flask app whose POST /orders view validates JSON by hand, runs SQL with db.session, computes the total and commits, all in one function.",
+      "expectations": [
+        "Characterization tests of the current HTTP behavior come first, or are explicitly proposed before the change",
+        "The view becomes thin: parse, call the use case, map the result",
+        "SQL moves into a repository adapter behind a Protocol port",
+        "The commit moves into a unit of work used by the use case, not the view",
+        "Status codes and response bodies of the endpoint are unchanged"
+      ]
+    },
+    {
+      "id": "review-mode-format",
+      "prompt": "Review this service for architecture problems.",
+      "setup": "A FastAPI project whose domain entity is a SQLAlchemy model with business methods and whose routes raise HTTPException from service functions.",
+      "expectations": [
+        "Findings are ordered by severity and use the format [severity] path:line — rule — consequence — fix",
+        "The ORM model used as domain entity is reported as a blocker",
+        "HTTPException raised outside the adapter is reported",
+        "Fixes are the smallest local change, not a rewrite"
+      ]
+    },
+    {
+      "id": "proportionality-crud",
+      "prompt": "Add CRUD endpoints for product categories (name and slug, nothing else).",
+      "setup": "An existing hexagonal FastAPI project.",
+      "expectations": [
+        "The answer uses a thin slice: no aggregate, no domain events, no outbox",
+        "A port still separates the use cases from SQL",
+        "The existing layout and naming of the project are followed"
+      ]
+    },
+    {
+      "id": "outbox-recipe",
+      "prompt": "When an order is paid, the shipping service must be notified reliably.",
+      "setup": "The base hexagonal FastAPI + SQLAlchemy project.",
+      "expectations": [
+        "Events are written to an outbox table in the same transaction as the order",
+        "The broker is not called inside the database transaction",
+        "Integration events are versioned and translated from domain events in an adapter",
+        "Consumers are required to be idempotent"
+      ]
+    }
+  ]
+}
