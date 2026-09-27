@@ -1,0 +1,12 @@
+{
+  "name": "remy349-skills",
+  "private": true,
+  "description": "Maintenance scripts for the skills in this repository. Not needed to install or use the skills.",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "check": "node scripts/build.mjs --check && node scripts/validate.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
